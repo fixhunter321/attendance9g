@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>8G</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f8f5ee;
+      --bg-top: #ffffff;
+      --bg-bottom: #f1e7d3; /* beige */
+      --text: #141b24; /* solid text color */
+      --glass-strong: rgba(255, 255, 255, 0.75);
+      --glass: rgba(255, 255, 255, 0.35);
+      --edge: rgba(255, 255, 255, 0.7);
+      --shine: rgba(255, 255, 255, 0.9);
+      --shadow: 0 10px 30px -12px rgba(90, 70, 40, 0.3),
+        inset 0 1px 0 0 var(--shine),
+        inset 0 -1px 0 0 rgba(255, 255, 255, 0.25),
+        inset 0 0 0 1px var(--edge);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Bricolage Grotesque", system-ui, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .liquid-bg { position: fixed; inset: 0; z-index: -1; background: linear-gradient(180deg, var(--bg-top), var(--bg-bottom)); }
+
+    main { min-height: 100vh; padding: 56px 20px 128px; }
+    .wrap { max-width: 448px; margin: 0 auto; }
+    h1 { font-size: 48px; font-weight: 600; letter-spacing: -0.025em; margin-bottom: 32px; color: var(--text); }
+    ul { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+
+    .glass {
+      position: relative; isolation: isolate; overflow: hidden; border: 0; cursor: pointer;
+      background: linear-gradient(160deg, var(--glass-strong), var(--glass));
+      backdrop-filter: blur(18px) saturate(180%);
+      -webkit-backdrop-filter: blur(18px) saturate(180%);
+      box-shadow: var(--shadow);
+      color: var(--text);
+      font-family: inherit;
+      transition: transform 180ms cubic-bezier(.3,.7,.4,1.5);
+    }
+    .glass:active { transform: scale(.95); }
+    .glass.pop { animation: jelly 520ms cubic-bezier(.25,.8,.3,1.2); }
+    .glass:focus-visible { outline: 2px solid #6aa9c9; outline-offset: 2px; }
+
+    .name {
+      width: 100%; border-radius: 9999px; padding: 16px 24px;
+      text-align: left; font-size: 16px; font-weight: 500;
+    }
+    .name .label { position: relative; z-index: 1; color: var(--text); }
+
+    .back {
+      position: fixed; left: 24px; bottom: 24px; width: 56px; height: 56px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    }
+
+    .ripple {
+      position: absolute; width: 12px; height: 12px; margin: -6px 0 0 -6px;
+      border-radius: 9999px; pointer-events: none; z-index: 0;
+      background: radial-gradient(circle, var(--shine) 0%, rgba(255,255,255,0) 70%);
+      animation: ripple 650ms ease-out forwards;
+    }
+
+    @keyframes jelly {
+      0% { transform: scale(.94,.94); } 35% { transform: scale(1.04,.96); }
+      55% { transform: scale(.98,1.02); } 75% { transform: scale(1.01,.99); }
+      100% { transform: scale(1,1); }
+    }
+    @keyframes ripple { from { transform: scale(1); opacity: .9; } to { transform: scale(40); opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) {
+      .glass.pop, .ripple { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="liquid-bg" aria-hidden="true"></div>
+
+  <main>
+    <div class="wrap">
+      <h1>8G</h1>
+      <ul id="list"></ul>
+    </div>
+
+    <button type="button" class="glass back" aria-label="Back" onclick="history.back()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+    </button>
+  </main>
+
+  <script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+
+import {
+  getFirestore,
+  doc,
+  runTransaction,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBnNA1hj4CUDWtY-yqgGaiFZdEFPAG49I8",
+  authDomain: "attendance9g.firebaseapp.com",
+  projectId: "attendance9g",
+  storageBucket: "attendance9g.firebasestorage.app",
+  messagingSenderId: "502138908420",
+  appId: "1:502138908420:web:4f48839ce57b5d26a66a51"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const CLASS_NAME = "8G";
+
+const names = [
+  "Muhammad Husni Syakir Al Fayed",
+  "Abdul Jabar El Hidayat",
+  "Muhammad Abdul Karim Asshidi",
+  "Muhamad Fathin Yusuf Ibrahim",
+  "Andi Callysta Faiqah Firdaus",
+  "Azmi Ibrahim",
+  "Antonio Firdaus Revan",
+  "Khalisa Naura Athifa",
+  "Kirana Alfi Sahra Toyib",
+  "Zaki Mirza Ramadhan",
+  "Mazaya Athifah",
+  "Rifatul Awliyah",
+  "Achmad Farhan Mufadhol",
+  "Muhammad Rizq Arkaan",
+  "Clarissa Lovelly Cecille",
+  "A'la Aula Tazkiya",
+  "Raisha Puteri Nadenta",
+  "Khanza Aulia Al Madinah",
+  "Nabila Syauqia Fadhillah",
+  "Adeeva Afshen Myesha",
+  "Fideliya Alvina Tis'a Afifah",
+  "Aysha Dzakirah Khaliqah",
+  "Naura Khalifatul Aqilla",
+  "Ahmad Fiqri Sakhi",
+  "Rihadatz Ulaiysa",
+  "Athaya Syailendra Raharja",
+  "Mochammad Adesta",
+  "Alby Alvaro Sidik",
+  "Queenzinky Brilian El Haque",
+  "Muhamad Arkha Juna",
+  "Nukeu Aulia Widiyanatasya",
+  "Kianu Alfarizky Setiawan",
+  "Nadila Fitrianingsih",
+  "Elfandio Rizmi Alfatih",
+  "Hizam Al Faqih",
+  "Adam Ikhsan",
+  "Khayandra Niyaz Athaya",
+  "Muhammad Rafa Ramadhan"
+];
+
+const list = document.getElementById("list");
+
+names.forEach((name) => {
+  const li = document.createElement("li");
+  const btn = document.createElement("button");
+
+  btn.type = "button";
+  btn.className = "glass name";
+  btn.innerHTML = '<span class="label"></span>';
+  btn.querySelector(".label").textContent = name;
+
+  btn.addEventListener("click", async (e) => {
+    if (btn.disabled) return;
+
+    btn.disabled = true;
+
+    const r = btn.getBoundingClientRect();
+    const dot = document.createElement("span");
+
+    dot.className = "ripple";
+    dot.style.left = (e.clientX - r.left) + "px";
+    dot.style.top = (e.clientY - r.top) + "px";
+    btn.appendChild(dot);
+
+    setTimeout(() => dot.remove(), 700);
+
+    btn.classList.remove("pop");
+    void btn.offsetWidth;
+    btn.classList.add("pop");
+
+    // ID stabil berdasarkan kelas dan nama
+    const docId = `${CLASS_NAME}_${name}`
+      .toLowerCase()
+      .normalize("NFKD")
+      .replace(/[^a-z0-9_-]+/g, "_");
+
+    try {
+      const attendanceRef = doc(db, "attendance", docId);
+
+      const result = await runTransaction(db, async (transaction) => {
+        const existing = await transaction.get(attendanceRef);
+
+        if (existing.exists()) {
+          return "already_attended";
+        }
+
+        transaction.set(attendanceRef, {
+          time: serverTimestamp(),
+          name: name,
+          class: CLASS_NAME,
+          synced: false
+        });
+
+        return "success";
+      });
+
+      if (result === "success" || result === "already_attended") {
+        li.remove();
+      }
+
+    } catch (error) {
+      console.error("Attendance error:", error);
+
+      btn.disabled = false;
+      alert("Absensi gagal dikirim. Silakan coba lagi.");
+    }
+  });
+
+  btn.addEventListener("animationend", (e) => {
+    if (e.target === btn) {
+      btn.classList.remove("pop");
+    }
+  });
+
+  li.appendChild(btn);
+  list.appendChild(li);
+});
+
+  </script>
+</body>
+</html>
